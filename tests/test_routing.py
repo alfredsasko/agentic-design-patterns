@@ -4,7 +4,7 @@ import pathlib
 from langchain_core.runnables import RunnableLambda
 
 
-MODULE_PATH = pathlib.Path("hands_one_code_examples/2_routing/2_1_routing.py")
+MODULE_PATH = pathlib.Path("hands_one_code_examples/2_1_routing.py")
 
 spec = importlib.util.spec_from_file_location("routing_example", MODULE_PATH)
 routing_example = importlib.util.module_from_spec(spec)

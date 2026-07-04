@@ -5,7 +5,7 @@ from langchain_core.runnables import RunnableLambda
 
 
 MODULE_PATH = pathlib.Path(
-    "hands_one_code_examples/1_prompt_chaning/1_1_prompt_chaining.py"
+    "hands_one_code_examples/1_1_prompt_chaining.py"
 )
 
 

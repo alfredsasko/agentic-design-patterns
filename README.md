@@ -20,7 +20,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ### Run the prompt chaining example
 
 ```bash
-~/.local/bin/uv run python hands_one_code_examples/1_prompt_chaning/1_1_prompt_chaining.py
+~/.local/bin/uv run python hands_one_code_examples/1_1_prompt_chaining.py
 ```
 
 ### Run tests
