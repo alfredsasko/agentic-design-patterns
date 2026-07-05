@@ -1,6 +1,7 @@
 import asyncio
 import importlib.util
 import pathlib
+from dataclasses import FrozenInstanceError
 
 import pytest
 
@@ -45,6 +46,44 @@ def test_prompt_templates_enforce_reflection_contract():
     assert "{description_history}" in revision_prompt
 
 
+def test_reflection_containers_are_frozen_dataclasses():
+    prompts = reflection_langchain_example.create_reflection_prompts()
+    chains = reflection_langchain_example.ReflectionChains(
+        generation="gen",
+        critique="crit",
+        revision="rev",
+    )
+    step = reflection_langchain_example.ReflectionStep(
+        iteration=1,
+        description_before_review="before",
+        critique="critique",
+        revised_description="after",
+        accepted=False,
+    )
+    result = reflection_langchain_example.ReflectionResult(
+        initial_description="init",
+        final_description="final",
+        steps=(step,),
+        iterations_run=1,
+    )
+    decision = reflection_langchain_example.CritiqueDecision(
+        status="ACCEPTED",
+        required_changes=(),
+    )
+
+    assert prompts.generation is not None
+    assert chains.revision == "rev"
+    assert step.accepted is False
+    assert result.iterations_run == 1
+    assert decision.status == "ACCEPTED"
+
+    with pytest.raises(FrozenInstanceError):
+        chains.revision = "changed"  # type: ignore[misc]
+
+    with pytest.raises(FrozenInstanceError):
+        step.accepted = True  # type: ignore[misc]
+
+
 def test_run_reflection_loop_refines_until_accepted():
     chains = reflection_langchain_example.ReflectionChains(
         generation=FakeChain(["Warm coffee, from your phone."]),
@@ -70,6 +109,7 @@ def test_run_reflection_loop_refines_until_accepted():
     assert result.initial_description == "Warm coffee, from your phone."
     assert result.iterations_run == 2
     assert len(result.steps) == 2
+    assert isinstance(result.steps[0], reflection_langchain_example.ReflectionStep)
     assert chains.revision.calls[0]["current_description"] == "Warm coffee, from your phone."
     assert "Mention app temperature control." in chains.revision.calls[0]["critique"]
     assert chains.critique.calls[1]["current_description"] == result.final_description

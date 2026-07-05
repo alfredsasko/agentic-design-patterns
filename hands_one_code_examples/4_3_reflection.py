@@ -2,8 +2,9 @@ import asyncio
 import json
 import os
 import re
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any
 
 from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser
@@ -17,19 +18,22 @@ NO_PREVIOUS_CRITIQUES = "No previous critiques yet."
 NO_PREVIOUS_DESCRIPTIONS = "No previous descriptions yet."
 
 
-class ReflectionPrompts(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class ReflectionPrompts:
     generation: ChatPromptTemplate
     critique: ChatPromptTemplate
     revision: ChatPromptTemplate
 
 
-class ReflectionChains(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class ReflectionChains:
     generation: Any
     critique: Any
     revision: Any
 
 
-class ReflectionStep(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class ReflectionStep:
     iteration: int
     description_before_review: str
     critique: str
@@ -37,14 +41,16 @@ class ReflectionStep(NamedTuple):
     accepted: bool
 
 
-class ReflectionResult(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class ReflectionResult:
     initial_description: str
     final_description: str
     steps: tuple[ReflectionStep, ...]
     iterations_run: int
 
 
-class CritiqueDecision(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class CritiqueDecision:
     status: str
     required_changes: tuple[str, ...]
 
