@@ -20,6 +20,7 @@ The repository is organized as a set of small, runnable examples that demonstrat
 - Reflection
 - Tool calling
 - Planning
+- Deep research with OpenAI Responses API
 
 ## Requirements
 
@@ -57,6 +58,12 @@ The examples currently use these variables:
 - `GOOGLE_API_KEY` for Gemini and Google ADK examples
 - `GEMINI_API_KEY` is accepted by one of the routing examples
 
+Deep research also reads these optional variables:
+
+- `OPENAI_DEEP_RESEARCH_FAST_TEST_MODE=true` narrows search scope and reduces cost during validation runs
+- `OPENAI_DEEP_RESEARCH_MAX_RETRIES` controls retry attempts for transient API failures
+- `OPENAI_DEEP_RESEARCH_RETRY_BASE_DELAY_SECONDS` controls retry backoff timing
+
 ## Run examples
 
 Run individual scripts with `uv`:
@@ -65,9 +72,16 @@ Run individual scripts with `uv`:
 uv run python hands_one_code_examples/1_1_prompt_chaining.py
 uv run python hands_one_code_examples/5_1_tools.py
 uv run python hands_one_code_examples/6_1_plan.py
+uv run python hands_one_code_examples/6_2_plan.py
 ```
 
 Each example prints its output to the console.
+
+## Deep Research
+
+`hands_one_code_examples/6_2_plan.py` shows an OpenAI deep-research workflow built on the Responses API. It prints both the research reasoning and the final outcome, plus extracted citations and source references when they are available.
+
+Use `OPENAI_DEEP_RESEARCH_FAST_TEST_MODE=true` when you want to verify the flow without spending as much time or tokens. That mode narrows the web-search context and asks the model for a shorter research pass, which is useful for local testing and CI.
 
 ## Run tests
 
