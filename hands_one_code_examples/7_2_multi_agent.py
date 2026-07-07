@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
+import os
 from contextlib import aclosing
 from dataclasses import dataclass
 from typing import Any, AsyncGenerator, Sequence
@@ -16,18 +18,13 @@ except ImportError:
     types = None  # type: ignore[assignment]
 
 from hands_one_code_examples._shared.adk_runtime import (
-    build_user_message as runtime_build_user_message,
-    close_agent_tree_async_clients,
-    close_runner,
+    build_user_message,
     content_to_text,
-    derive_session_id as runtime_derive_session_id,
-    ensure_session as runtime_ensure_session,
+    derive_session_id,
     event_output_to_text,
-    event_transfer_target,
-    load_project_environment,
-    require_google_adk_dependencies,
-    suppress_known_asyncio_shutdown_noise,
-    validate_runtime_environment as runtime_validate_runtime_environment,
+    load_environment_variables,
+    require_google_adk,
+    validate_runtime_environment,
 )
 
 
@@ -39,42 +36,12 @@ DEFAULT_GREETING_REQUEST = "Please greet the new teammate, Priya."
 DEFAULT_TASK_REQUEST = "Please perform the deployment checklist task."
 
 
-def load_environment_variables() -> None:
-    load_project_environment(__file__)
-
-
-def require_google_adk() -> None:
-    require_google_adk_dependencies(
-        {
-            "BaseAgent": BaseAgent,
-            "LlmAgent": LlmAgent,
-            "InvocationContext": InvocationContext,
-            "Event": Event,
-            "InMemoryRunner": InMemoryRunner,
-            "types": types,
-        },
-        example_name="hierarchical ADK example",
-    )
-
-
-def validate_runtime_environment(model: str = DEFAULT_MODEL) -> None:
-    runtime_validate_runtime_environment(
-        model,
-        example_name="hierarchical ADK example",
-    )
-
-
-def derive_session_id(base_session_id: str, scenario_index: int) -> str:
-    return runtime_derive_session_id(
-        base_session_id,
-        scenario_index,
-        index_name="scenario_index",
-    )
-
-
-def build_user_message(request: str) -> Any:
-    require_google_adk()
-    return runtime_build_user_message(types, request)
+def _event_transfer_target(event: Any) -> str:
+    actions = getattr(event, "actions", None)
+    transfer_target = getattr(actions, "transfer_to_agent", None)
+    if isinstance(transfer_target, str) and transfer_target.strip():
+        return transfer_target.strip()
+    return ""
 
 
 @dataclass(frozen=True)
@@ -181,8 +148,16 @@ async def ensure_session(
     user_id: str = DEFAULT_USER_ID,
     session_id: str = DEFAULT_SESSION_ID,
 ) -> Any:
-    return await runtime_ensure_session(
-        runner,
+    session = await runner.session_service.get_session(
+        app_name=runner.app_name,
+        user_id=user_id,
+        session_id=session_id,
+    )
+    if session is not None:
+        return session
+
+    return await runner.session_service.create_session(
+        app_name=runner.app_name,
         user_id=user_id,
         session_id=session_id,
     )
@@ -197,7 +172,7 @@ def event_to_interaction_step(event: Any) -> AgentInteractionStep | None:
     if not text:
         text = event_output_to_text(event)
     if not text:
-        transfer_target = event_transfer_target(event)
+        transfer_target = _event_transfer_target(event)
         if transfer_target:
             return AgentInteractionStep(
                 author=author,
@@ -316,8 +291,31 @@ class HierarchicalAgentDemo:
         )
 
     async def close(self) -> None:
-        await close_agent_tree_async_clients(self.coordinator)
-        await close_runner(self.runner)
+        await _close_agent_tree_async_clients(self.coordinator)
+        close = getattr(self.runner, "close", None)
+        if close is None:
+            return
+        result = close()
+        if inspect.isawaitable(result):
+            await result
+
+
+async def _close_agent_tree_async_clients(agent: Any) -> None:
+    model = getattr(agent, "canonical_model", None)
+    if model is not None:
+        api_client = getattr(model, "api_client", None)
+        if api_client is not None:
+            base_api_client = getattr(api_client, "_api_client", None)
+            if base_api_client is not None:
+                aclose = getattr(base_api_client, "aclose", None)
+                if callable(aclose):
+                    await aclose()
+            close = getattr(api_client, "close", None)
+            if callable(close):
+                close()
+
+    for sub_agent in getattr(agent, "sub_agents", []) or []:
+        await _close_agent_tree_async_clients(sub_agent)
 
 
 async def run_demo_requests(
@@ -361,10 +359,23 @@ async def main() -> None:
         await demo.close()
 
 
+def _suppress_known_asyncio_shutdown_noise(
+    loop: asyncio.AbstractEventLoop,
+    context: dict[str, Any],
+) -> None:
+    message = str(context.get("message", ""))
+    exception = context.get("exception")
+    if "Fatal error on SSL transport" in message:
+        return
+    if isinstance(exception, RuntimeError) and "Event loop is closed" in str(exception):
+        return
+    loop.default_exception_handler(context)
+
+
 def run_main() -> None:
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.set_exception_handler(suppress_known_asyncio_shutdown_noise)
+    loop.set_exception_handler(_suppress_known_asyncio_shutdown_noise)
     try:
         loop.run_until_complete(main())
     finally:
