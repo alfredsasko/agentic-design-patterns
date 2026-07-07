@@ -1,1 +1,2 @@
-"""Shared helpers for ADK code examples."""
+"""Shared runtime helpers for the hands-on ADK examples."""
+

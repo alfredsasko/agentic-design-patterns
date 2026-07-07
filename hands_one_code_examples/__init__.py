@@ -1,1 +1,2 @@
-"""Code examples package."""
+"""Hands-on ADK example package."""
+
