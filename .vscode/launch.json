@@ -1,0 +1,44 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Run Example File",
+            "type": "python",
+            "request": "launch",
+            "module": "hands_one_code_examples.run_example",
+            "args": [
+                "${input:exampleFile}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Run Example Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-q",
+                "${input:testPath}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ],
+    "inputs": [
+        {
+            "id": "exampleFile",
+            "type": "promptString",
+            "description": "Enter a relative path under hands_one_code_examples",
+            "default": "hands_one_code_examples/7_2_multi_agent.py"
+        },
+        {
+            "id": "testPath",
+            "type": "promptString",
+            "description": "Enter a test path relative to the repo root",
+            "default": "tests/test_7_2_multi_agent.py"
+        }
+    ]
+}

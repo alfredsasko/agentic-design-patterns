@@ -66,13 +66,13 @@ Deep research also reads these optional variables:
 
 ## Run examples
 
-Run individual scripts with `uv`:
+Run individual examples as modules from the repository root:
 
 ```bash
-uv run python hands_one_code_examples/1_1_prompt_chaining.py
-uv run python hands_one_code_examples/5_1_tools.py
-uv run python hands_one_code_examples/6_1_plan.py
-uv run python hands_one_code_examples/6_2_plan.py
+uv run python -m hands_one_code_examples.1_1_prompt_chaining.py
+uv run python -m hands_one_code_examples.5_1_tools.py
+uv run python -m hands_one_code_examples.6_1_plan.py
+uv run python -m hands_one_code_examples.6_2_plan.py
 ```
 
 Each example prints its output to the console.
