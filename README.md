@@ -103,10 +103,22 @@ uv run pytest -q
 
 ## Development notes
 
-- Keep each example focused on a single pattern or workflow.
-- Prefer small helper functions and simple classes over large scripts.
-- Add a matching test file in `tests/` when introducing a new example or refactoring behavior.
-- Do not commit `.env`; keep secrets local and use `.env.example` as the template.
+Use the GitFlow branch structure for changes in this repository:
+
+```bash
+git checkout feature/my-change
+git add hands_one_code_examples/my_example.py tests/test_my_example.py
+git commit -m "feat: describe the change"
+git checkout dev
+git merge --no-ff feature/my-change -m "Merge feature/my-change into dev"
+git push origin dev
+git checkout main
+git merge --no-ff dev -m "Merge dev into main"
+git push origin main
+git checkout feature/my-change
+```
+
+Keep each example focused on a single pattern or workflow. Prefer small helper functions and simple classes over large scripts. Add a matching test file in `tests/` when introducing a new example or refactoring behavior. Do not commit `.env`; keep secrets local and use `.env.example` as the template.
 
 ## License
 
