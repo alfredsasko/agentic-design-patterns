@@ -14,13 +14,27 @@ The repository is organized as a set of small, runnable examples that demonstrat
 
 ## Patterns covered
 
-- Prompt chaining
-- Routing
-- Parallelization
-- Reflection
-- Tool calling
-- Planning
-- Deep research with OpenAI Responses API
+| Chapter | Pattern | Framework | File Name |
+| --- | --- | --- | --- |
+| 1. Prompt Chaining | Two-step extraction pipeline | LangChain | `1_1_prompt_chaining.py` |
+| 2. Routing | LLM router with branch handlers | LangChain | `2_1_routing.py` |
+| 2. Routing | Coordinator with delegated specialists | Google ADK | `2_2_routing.py` |
+| 3. Parallelization | Parallel prompt fan-out with synthesis | LangChain | `3_1_parallelization.py` |
+| 3. Parallelization | Parallel specialist fan-out | Google ADK | `3_2_parallelization.py` |
+| 3. Parallelization | Workflow fan-out and join | Google ADK | `3_3_parallelization.py` |
+| 4. Reflection | Generate-critique refinement loop | LangChain | `4_1_reflection.py` |
+| 4. Reflection | Generator-reviewer workflow | Google ADK | `4_2_reflection.py` |
+| 4. Reflection | Structured self-critique loop | LangChain | `4_3_reflection.py` |
+| 4. Reflection | Graph-based revision loop | LangGraph | `4_4_reflection.py` |
+| 5. Tool Use | Single-tool agent | LangChain | `5_1_tools.py` |
+| 5. Tool Use | Custom tool-backed agent | CrewAI | `5_2_tools.py` |
+| 5. Tool Use | Deterministic function tool | Google ADK | `5_3_tools.py` |
+| 6. Planning | Plan-then-write crew | CrewAI | `6_1_plan.py` |
+| 6. Planning | Web-research report workflow | OpenAI Responses API | `6_2_plan.py` |
+| 7. Multi-Agent | Research-to-writer handoff | CrewAI | `7_1_multi_agent.py` |
+| 7. Multi-Agent | Hierarchical coordinator delegation | Google ADK | `7_2_multi_agent.py` |
+| 7. Multi-Agent | Writer-checker iteration loop | Google ADK | `7_3_multi_agent.py` |
+| 7. Multi-Agent | Specialist agent as tool | Google ADK | `7_4_multi_agent.py` |
 
 ## Requirements
 
