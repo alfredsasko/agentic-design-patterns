@@ -6,10 +6,7 @@ import os
 import re
 from contextlib import aclosing
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, AsyncGenerator, Sequence
-
-from dotenv import load_dotenv
 
 try:
     from google.adk.agents import BaseAgent, LlmAgent, LoopAgent
@@ -23,6 +20,15 @@ except ImportError:
     InMemoryRunner = None  # type: ignore[assignment]
     START = Workflow = node = None  # type: ignore[assignment]
     types = None  # type: ignore[assignment]
+
+from hands_one_code_examples._shared.adk_runtime import (
+    build_user_message,
+    content_to_text,
+    derive_session_id,
+    load_environment_variables,
+    require_google_adk,
+    validate_runtime_environment,
+)
 
 
 DEFAULT_MODEL = "gemini-2.5-flash"
@@ -40,62 +46,6 @@ DEFAULT_INITIAL_FEEDBACK = (
 )
 REQUIRED_HEADINGS = ("## Summary", "## Impact", "## Next Actions")
 MAX_WORD_COUNT = 120
-
-
-def load_environment_variables() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    load_dotenv(project_root / ".env")
-
-
-def require_google_adk() -> None:
-    if (
-        BaseAgent is None
-        or LlmAgent is None
-        or InvocationContext is None
-        or Event is None
-        or EventActions is None
-        or InMemoryRunner is None
-        or Workflow is None
-        or node is None
-        or START is None
-        or types is None
-    ):
-        raise ImportError(
-            "google-adk is not installed. Install it with `uv add google-adk` "
-            "before running this loop-pattern example."
-        )
-
-
-def validate_runtime_environment(model: str = DEFAULT_MODEL) -> None:
-    if model.startswith("gemini") and not os.getenv("GOOGLE_API_KEY"):
-        raise ValueError(
-            "GOOGLE_API_KEY not found. Set it before running this ADK loop example."
-        )
-
-
-def build_user_message(request: str) -> Any:
-    require_google_adk()
-    if not request.strip():
-        raise ValueError("request must not be empty")
-
-    user_content_type = getattr(types, "UserContent", types.Content)
-    return user_content_type(parts=[types.Part(text=request)])
-
-
-def derive_session_id(base_session_id: str, run_index: int) -> str:
-    if run_index < 0:
-        raise ValueError("run_index must not be negative")
-    return f"{base_session_id}-{run_index + 1}"
-
-
-def _content_to_text(content: Any) -> str:
-    parts = getattr(content, "parts", None) or []
-    text_parts: list[str] = []
-    for part in parts:
-        text = getattr(part, "text", None)
-        if isinstance(text, str) and text.strip():
-            text_parts.append(text.strip())
-    return "\n".join(text_parts).strip()
 
 
 def _event_node_name(event: Any) -> str:
@@ -295,7 +245,7 @@ def build_loop_agent(
         edges=[
             (START, active_writer),
             (active_writer, active_checker),
-            (active_checker, {True: active_writer, False: terminator}),
+            (active_checker, {False: terminator, True: active_writer}),
         ],
     )
 
@@ -343,7 +293,7 @@ def extract_iteration_records(events: Sequence[Any]) -> list[LoopIterationRecord
         author = getattr(event, "author", None) or ""
         node_name = _event_node_name(event)
         effective_name = node_name or author
-        text = _content_to_text(getattr(event, "content", None))
+        text = content_to_text(getattr(event, "content", None))
         if not text:
             continue
 

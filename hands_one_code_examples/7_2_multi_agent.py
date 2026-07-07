@@ -5,10 +5,7 @@ import inspect
 import os
 from contextlib import aclosing
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, AsyncGenerator, Sequence
-
-from dotenv import load_dotenv
 
 try:
     from google.adk.agents import BaseAgent, LlmAgent
@@ -20,6 +17,16 @@ except ImportError:
     BaseAgent = LlmAgent = InvocationContext = Event = InMemoryRunner = None  # type: ignore[assignment]
     types = None  # type: ignore[assignment]
 
+from hands_one_code_examples._shared.adk_runtime import (
+    build_user_message,
+    content_to_text,
+    derive_session_id,
+    event_output_to_text,
+    load_environment_variables,
+    require_google_adk,
+    validate_runtime_environment,
+)
+
 
 DEFAULT_MODEL = "gemini-2.5-flash"
 DEFAULT_APP_NAME = "hierarchical_agent_demo"
@@ -27,65 +34,6 @@ DEFAULT_USER_ID = "demo-user"
 DEFAULT_SESSION_ID = "hierarchical-session"
 DEFAULT_GREETING_REQUEST = "Please greet the new teammate, Priya."
 DEFAULT_TASK_REQUEST = "Please perform the deployment checklist task."
-
-
-def load_environment_variables() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    load_dotenv(project_root / ".env")
-
-
-def require_google_adk() -> None:
-    if (
-        BaseAgent is None
-        or LlmAgent is None
-        or InvocationContext is None
-        or Event is None
-        or InMemoryRunner is None
-        or types is None
-    ):
-        raise ImportError(
-            "google-adk is not installed. Install it with `uv add google-adk` "
-            "before running this hierarchical ADK example."
-        )
-
-
-def validate_runtime_environment(model: str = DEFAULT_MODEL) -> None:
-    if model.startswith("gemini") and not os.getenv("GOOGLE_API_KEY"):
-        raise ValueError(
-            "GOOGLE_API_KEY not found. Set it before running this hierarchical ADK example."
-        )
-
-
-def derive_session_id(base_session_id: str, scenario_index: int) -> str:
-    if scenario_index < 0:
-        raise ValueError("scenario_index must not be negative")
-    return f"{base_session_id}-{scenario_index + 1}"
-
-
-def build_user_message(request: str) -> Any:
-    require_google_adk()
-    if not request.strip():
-        raise ValueError("request must not be empty")
-
-    user_content_type = getattr(types, "UserContent", types.Content)
-    return user_content_type(parts=[types.Part(text=request)])
-
-
-def _content_to_text(content: Any) -> str:
-    parts = getattr(content, "parts", None) or []
-    text_parts: list[str] = []
-    for part in parts:
-        text = getattr(part, "text", None)
-        if isinstance(text, str) and text.strip():
-            text_parts.append(text.strip())
-    return "\n".join(text_parts).strip()
-
-
-def _event_output_to_text(event: Any) -> str:
-    output = getattr(event, "output", None)
-    if isinstance(output, str) and output.strip():
-        return output.strip()
-    return ""
 
 
 def _event_transfer_target(event: Any) -> str:
@@ -220,9 +168,9 @@ def event_to_interaction_step(event: Any) -> AgentInteractionStep | None:
     if author == "user":
         return None
 
-    text = _content_to_text(getattr(event, "content", None))
+    text = content_to_text(getattr(event, "content", None))
     if not text:
-        text = _event_output_to_text(event)
+        text = event_output_to_text(event)
     if not text:
         transfer_target = _event_transfer_target(event)
         if transfer_target:
