@@ -1,28 +1,38 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
-import os
 import re
 from contextlib import aclosing
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, AsyncGenerator, Sequence
-
-from dotenv import load_dotenv
+from typing import Any, Sequence
 
 try:
-    from google.adk.agents import BaseAgent, LlmAgent, LoopAgent
+    from google.adk.agents import BaseAgent, LlmAgent
     from google.adk.agents.invocation_context import InvocationContext
     from google.adk.events import Event, EventActions
     from google.adk.runners import InMemoryRunner
     from google.adk.workflow import START, Workflow, node
     from google.genai import types
 except ImportError:
-    BaseAgent = LlmAgent = LoopAgent = InvocationContext = Event = EventActions = None  # type: ignore[assignment]
+    BaseAgent = LlmAgent = InvocationContext = Event = EventActions = None  # type: ignore[assignment]
     InMemoryRunner = None  # type: ignore[assignment]
     START = Workflow = node = None  # type: ignore[assignment]
     types = None  # type: ignore[assignment]
+
+from hands_one_code_examples._shared.adk_runtime import (
+    build_user_message as runtime_build_user_message,
+    close_agent_tree_async_clients,
+    close_runner,
+    content_to_text,
+    derive_session_id as runtime_derive_session_id,
+    ensure_session as runtime_ensure_session,
+    event_node_name,
+    finalize_event_loop,
+    load_project_environment,
+    require_google_adk_dependencies,
+    suppress_known_asyncio_shutdown_noise,
+    validate_runtime_environment as runtime_validate_runtime_environment,
+)
 
 
 DEFAULT_MODEL = "gemini-2.5-flash"
@@ -43,67 +53,45 @@ MAX_WORD_COUNT = 120
 
 
 def load_environment_variables() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    load_dotenv(project_root / ".env")
+    load_project_environment(__file__)
 
 
 def require_google_adk() -> None:
-    if (
-        BaseAgent is None
-        or LlmAgent is None
-        or InvocationContext is None
-        or Event is None
-        or EventActions is None
-        or InMemoryRunner is None
-        or Workflow is None
-        or node is None
-        or START is None
-        or types is None
-    ):
-        raise ImportError(
-            "google-adk is not installed. Install it with `uv add google-adk` "
-            "before running this loop-pattern example."
-        )
+    require_google_adk_dependencies(
+        {
+            "BaseAgent": BaseAgent,
+            "LlmAgent": LlmAgent,
+            "InvocationContext": InvocationContext,
+            "Event": Event,
+            "EventActions": EventActions,
+            "InMemoryRunner": InMemoryRunner,
+            "Workflow": Workflow,
+            "node": node,
+            "START": START,
+            "types": types,
+        },
+        example_name="loop-pattern example",
+    )
 
 
 def validate_runtime_environment(model: str = DEFAULT_MODEL) -> None:
-    if model.startswith("gemini") and not os.getenv("GOOGLE_API_KEY"):
-        raise ValueError(
-            "GOOGLE_API_KEY not found. Set it before running this ADK loop example."
-        )
+    runtime_validate_runtime_environment(
+        model,
+        example_name="ADK loop example",
+    )
 
 
 def build_user_message(request: str) -> Any:
     require_google_adk()
-    if not request.strip():
-        raise ValueError("request must not be empty")
-
-    user_content_type = getattr(types, "UserContent", types.Content)
-    return user_content_type(parts=[types.Part(text=request)])
+    return runtime_build_user_message(types, request)
 
 
 def derive_session_id(base_session_id: str, run_index: int) -> str:
-    if run_index < 0:
-        raise ValueError("run_index must not be negative")
-    return f"{base_session_id}-{run_index + 1}"
-
-
-def _content_to_text(content: Any) -> str:
-    parts = getattr(content, "parts", None) or []
-    text_parts: list[str] = []
-    for part in parts:
-        text = getattr(part, "text", None)
-        if isinstance(text, str) and text.strip():
-            text_parts.append(text.strip())
-    return "\n".join(text_parts).strip()
-
-
-def _event_node_name(event: Any) -> str:
-    node_info = getattr(event, "node_info", None)
-    path = getattr(node_info, "path", "") or ""
-    if not path:
-        return ""
-    return path.rsplit("/", 1)[-1].split("@", 1)[0]
+    return runtime_derive_session_id(
+        base_session_id,
+        run_index,
+        index_name="run_index",
+    )
 
 
 def _word_count(text: str) -> int:
@@ -313,19 +301,11 @@ async def ensure_session(
     session_id: str,
     request: str,
 ) -> Any:
-    session = await runner.session_service.get_session(
-        app_name=runner.app_name,
+    return await runtime_ensure_session(
+        runner,
         user_id=user_id,
         session_id=session_id,
-    )
-    if session is not None:
-        return session
-
-    return await runner.session_service.create_session(
-        app_name=runner.app_name,
-        user_id=user_id,
-        session_id=session_id,
-        state={
+        initial_state={
             "incident_request": request,
             "current_update": "",
             "checker_feedback": DEFAULT_INITIAL_FEEDBACK,
@@ -341,9 +321,9 @@ def extract_iteration_records(events: Sequence[Any]) -> list[LoopIterationRecord
 
     for event in events:
         author = getattr(event, "author", None) or ""
-        node_name = _event_node_name(event)
+        node_name = event_node_name(event)
         effective_name = node_name or author
-        text = _content_to_text(getattr(event, "content", None))
+        text = content_to_text(getattr(event, "content", None))
         if not text:
             continue
 
@@ -449,31 +429,8 @@ class IncidentUpdateLoopApp:
         )
 
     async def close(self) -> None:
-        await _close_agent_tree_async_clients(self.loop_agent)
-        close = getattr(self.runner, "close", None)
-        if close is None:
-            return
-        result = close()
-        if inspect.isawaitable(result):
-            await result
-
-
-async def _close_agent_tree_async_clients(agent: Any) -> None:
-    model = getattr(agent, "canonical_model", None)
-    if model is not None:
-        api_client = getattr(model, "api_client", None)
-        if api_client is not None:
-            base_api_client = getattr(api_client, "_api_client", None)
-            if base_api_client is not None:
-                aclose = getattr(base_api_client, "aclose", None)
-                if callable(aclose):
-                    await aclose()
-            close = getattr(api_client, "close", None)
-            if callable(close):
-                close()
-
-    for sub_agent in getattr(agent, "sub_agents", []) or []:
-        await _close_agent_tree_async_clients(sub_agent)
+        await close_agent_tree_async_clients(self.loop_agent)
+        await close_runner(self.runner)
 
 
 def print_run_result(result: LoopRunResult) -> None:
@@ -499,24 +456,11 @@ def print_run_result(result: LoopRunResult) -> None:
     )
 
 
-def _suppress_known_asyncio_shutdown_noise(
-    loop: asyncio.AbstractEventLoop,
-    context: dict[str, Any],
-) -> None:
-    message = str(context.get("message", ""))
-    exception = context.get("exception")
-    if "Fatal error on SSL transport" in message:
-        return
-    if isinstance(exception, RuntimeError) and "Event loop is closed" in str(exception):
-        return
-    loop.default_exception_handler(context)
-
-
 async def main() -> None:
     load_environment_variables()
     validate_runtime_environment()
     running_loop = asyncio.get_running_loop()
-    running_loop.set_exception_handler(_suppress_known_asyncio_shutdown_noise)
+    running_loop.set_exception_handler(suppress_known_asyncio_shutdown_noise)
     app = IncidentUpdateLoopApp.build(
         session_id=derive_session_id(DEFAULT_SESSION_ID, 0),
     )
@@ -532,17 +476,11 @@ async def main() -> None:
 def run_main() -> None:
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.set_exception_handler(_suppress_known_asyncio_shutdown_noise)
+    loop.set_exception_handler(suppress_known_asyncio_shutdown_noise)
     try:
         loop.run_until_complete(main())
     finally:
-        loop.run_until_complete(asyncio.sleep(0))
-        loop.run_until_complete(asyncio.sleep(0))
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        shutdown_default_executor = getattr(loop, "shutdown_default_executor", None)
-        if callable(shutdown_default_executor):
-            loop.run_until_complete(shutdown_default_executor())
-        loop.close()
+        finalize_event_loop(loop)
 
 
 if __name__ == "__main__":
