@@ -35,6 +35,8 @@ The repository is organized as a set of small, runnable examples that demonstrat
 | 7. Multi-Agent | Hierarchical coordinator delegation | Google ADK | `7_2_multi_agent.py` |
 | 7. Multi-Agent | Writer-checker iteration loop | Google ADK | `7_3_multi_agent.py` |
 | 7. Multi-Agent | Specialist agent as tool | Google ADK | `7_4_multi_agent.py` |
+| 8. Memory | Short-term conversation memory | LangGraph | `8_1_memory.py` |
+| 8. Memory | Long-term self-improving prompts | LangGraph | `8_2_memory.py` |
 
 ## Requirements
 
