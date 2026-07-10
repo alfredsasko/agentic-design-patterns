@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import pathlib
 import sys
@@ -224,7 +225,64 @@ def install_fake_google_adk_modules() -> None:
     sys.modules["google.genai"] = genai_module
 
 
-def load_module_with_fake_adk(module_path: pathlib.Path, module_name: str) -> Any:
+async def collect_async_events(async_iterable: Any) -> list[Any]:
+    return [event async for event in async_iterable]
+
+
+def make_event(
+    module: Any,
+    *,
+    author: str,
+    text: str | None = None,
+    function_call: Any | None = None,
+    function_response: Any | None = None,
+    is_final: bool = False,
+    escalate: bool | None = None,
+    route: bool | None = None,
+    transfer_to_agent: str | None = None,
+    node_path: str | None = None,
+) -> Any:
+    parts: list[Any] = []
+    if text is not None:
+        parts.append(module.types.Part(text=text))
+    if function_call is not None:
+        parts.append(module.types.Part(function_call=function_call))
+    if function_response is not None:
+        parts.append(module.types.Part(function_response=function_response))
+
+    content = module.types.Content(role="model", parts=parts) if parts else None
+    actions_cls = getattr(module, "EventActions", None)
+    if actions_cls is None:
+        actions = builtin_types.SimpleNamespace(
+            escalate=escalate,
+            route=route,
+            transfer_to_agent=transfer_to_agent,
+        )
+    else:
+        actions = actions_cls(
+            escalate=escalate,
+            route=route,
+            transfer_to_agent=transfer_to_agent,
+        )
+    return module.Event(
+        author=author,
+        content=content,
+        is_final=is_final,
+        actions=actions,
+        node_path=node_path or author,
+    )
+
+
+def run(coro: Any) -> Any:
+    return asyncio.run(coro)
+
+
+def load_module_with_fake_adk(
+    module_path: pathlib.Path,
+    module_name: str,
+    include_workflow: bool = False,
+) -> Any:
+    del include_workflow
     install_fake_google_adk_modules()
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     module = importlib.util.module_from_spec(spec)
