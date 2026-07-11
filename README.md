@@ -40,6 +40,7 @@ The repository is organized as a set of small, runnable examples that demonstrat
 | 10. MCP | Filesystem agent with McpToolset tracing | Google ADK | `mcp_agent/agent.py` |
 | 11. Goals & Monitoring | Concept of self improving coding problem solver | LangChain | `11_1_goal_monitoring.py`|
 | 11. Goals & Monitoring | Product grade coding problem solver | CrewAI | `11_2_goal_monitoring.py`|
+| 12. Exception handling and recovery | Product grade location services gracefull tool degradation | Goolge ADK | `12_1_excpetion_recovery.py`|
 
 ## Requirements
 
