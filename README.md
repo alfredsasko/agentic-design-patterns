@@ -37,11 +37,13 @@ The repository is organized as a set of small, runnable examples that demonstrat
 | 7. Multi-Agent | Specialist agent as tool | Google ADK | `7_4_multi_agent.py` |
 | 8. Memory | Short-term conversation memory | LangGraph | `8_1_memory.py` |
 | 8. Memory | Long-term self-improving prompts | LangGraph | `8_2_memory.py` |
+| 10. MCP | Filesystem agent with McpToolset tracing | Google ADK | `mcp_agent/agent.py` |
 
 ## Requirements
 
 - Python 3.10 or newer
 - `uv`
+- Node.js with `npx` available on `PATH` for the MCP filesystem server example
 - API access for the provider used by the example you run
 
 ## Setup
@@ -85,13 +87,23 @@ Deep research also reads these optional variables:
 Run individual examples as modules from the repository root:
 
 ```bash
-uv run python -m hands_one_code_examples.1_1_prompt_chaining.py
-uv run python -m hands_one_code_examples.5_1_tools.py
-uv run python -m hands_one_code_examples.6_1_plan.py
-uv run python -m hands_one_code_examples.6_2_plan.py
+uv run python -m hands_one_code_examples.1_1_prompt_chaining
 ```
 
 Each example prints its output to the console.
+
+Run these examples via goole sdk web feature in root directory
+```bash
+# Files System MCP Server
+cd hands_one_code_examples && adk web
+```
+```bash
+# in terminal 1: Run Fast MCP Server: Greeter
+uv run python hands_one_code_examples/fastmcp_server.py
+
+# in terminal 2: run adk web ui
+cd hands_one_code_examples && adk web
+```
 
 ## Deep Research
 
