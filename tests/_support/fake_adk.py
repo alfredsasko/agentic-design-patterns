@@ -225,6 +225,47 @@ def install_fake_google_adk_modules() -> None:
     sys.modules["google.genai"] = genai_module
 
 
+def install_fake_mcp_modules() -> None:
+    tools_module = sys.modules["google.adk.tools"]
+    mcp_tool_package = builtin_types.ModuleType("google.adk.tools.mcp_tool")
+    mcp_module = builtin_types.ModuleType("mcp")
+
+    class FakeStdioServerParameters:
+        def __init__(self, *, command, args, env=None):
+            self.command = command
+            self.args = list(args)
+            self.env = env
+
+    class FakeStdioConnectionParams:
+        def __init__(self, *, server_params, timeout=5.0):
+            self.server_params = server_params
+            self.timeout = timeout
+
+    class FakeMcpToolset:
+        def __init__(self, *, connection_params, tool_filter=None):
+            self.connection_params = connection_params
+            self.tool_filter = tool_filter
+            self._tools = [
+                builtin_types.SimpleNamespace(name=tool_name)
+                for tool_name in list(tool_filter or [])
+            ]
+            self.close_calls = 0
+
+        async def get_tools(self):
+            return list(self._tools)
+
+        async def close(self):
+            self.close_calls += 1
+
+    mcp_module.StdioServerParameters = FakeStdioServerParameters
+    mcp_tool_package.McpToolset = FakeMcpToolset
+    mcp_tool_package.StdioConnectionParams = FakeStdioConnectionParams
+
+    sys.modules["mcp"] = mcp_module
+    sys.modules["google.adk.tools.mcp_tool"] = mcp_tool_package
+    tools_module.mcp_tool = mcp_tool_package
+
+
 async def collect_async_events(async_iterable: Any) -> list[Any]:
     return [event async for event in async_iterable]
 
@@ -281,9 +322,12 @@ def load_module_with_fake_adk(
     module_path: pathlib.Path,
     module_name: str,
     include_workflow: bool = False,
+    include_mcp: bool = False,
 ) -> Any:
     del include_workflow
     install_fake_google_adk_modules()
+    if include_mcp:
+        install_fake_mcp_modules()
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None

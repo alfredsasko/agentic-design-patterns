@@ -12,5 +12,12 @@ venv/
 # Local environment files
 .env
 
+# Example runtime output
+hands_one_code_examples/mcp_managed_files/
+
 # OS/editor noise
 .DS_Store
+
+# adk web logs
+hands_one_code_examples/mcp_agent/.adk/
+hands_one_code_examples/fastmcp_client_agent/.adk/
