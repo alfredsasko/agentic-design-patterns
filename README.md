@@ -41,6 +41,7 @@ The repository is organized as a set of small, runnable examples that demonstrat
 | 11. Goals & Monitoring | Concept of self improving coding problem solver | LangChain | `11_1_goal_monitoring.py`|
 | 11. Goals & Monitoring | Product grade coding problem solver | CrewAI | `11_2_goal_monitoring.py`|
 | 12. Exception handling and recovery | Product grade location services gracefull tool degradation | Goolge ADK | `12_1_excpetion_recovery.py`|
+| 13. Human in the loop | Supervisor-reviewed refund approval with execution | Google ADK | `13_1_human_in_the_loop.py` |
 
 ## Requirements
 
@@ -106,6 +107,31 @@ uv run python hands_one_code_examples/fastmcp_server.py
 
 # in terminal 2: run adk web ui
 cd hands_one_code_examples && adk web
+```
+
+Interactive HITL example with ADK Web:
+```bash
+uv run adk web hands_one_code_examples/human_in_the_loop_agent
+```
+
+`adk web` is intended for local development and debugging, not production deployment. Once the UI opens, send a request like:
+
+```text
+Refund order ORD-2049 for $149.99 because the customer was double charged 10 days ago. Customer tier is gold.
+```
+
+When the workflow pauses for supervisor input, reply with JSON such as:
+
+```json
+{"decision":"approve","approved_amount":149.99,"notes":"Approved after validating duplicate charge evidence."}
+```
+
+![alt text](image.png)
+
+You can also run a console preview of the same workflow:
+
+```bash
+uv run python -m hands_one_code_examples.13_1_human_in_the_loop
 ```
 
 ## Deep Research
