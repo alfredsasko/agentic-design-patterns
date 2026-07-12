@@ -14,34 +14,35 @@ The repository is organized as a set of small, runnable examples that demonstrat
 
 ## Patterns covered
 
-| Chapter | Pattern | Framework | File Name |
-| --- | --- | --- | --- |
-| 1. Prompt Chaining | Two-step extraction pipeline | LangChain | `1_1_prompt_chaining.py` |
-| 2. Routing | LLM router with branch handlers | LangChain | `2_1_routing.py` |
-| 2. Routing | Coordinator with delegated specialists | Google ADK | `2_2_routing.py` |
-| 3. Parallelization | Parallel prompt fan-out with synthesis | LangChain | `3_1_parallelization.py` |
-| 3. Parallelization | Parallel specialist fan-out | Google ADK | `3_2_parallelization.py` |
-| 3. Parallelization | Workflow fan-out and join | Google ADK | `3_3_parallelization.py` |
-| 4. Reflection | Generate-critique refinement loop | LangChain | `4_1_reflection.py` |
-| 4. Reflection | Generator-reviewer workflow | Google ADK | `4_2_reflection.py` |
-| 4. Reflection | Structured self-critique loop | LangChain | `4_3_reflection.py` |
-| 4. Reflection | Graph-based revision loop | LangGraph | `4_4_reflection.py` |
-| 5. Tool Use | Single-tool agent | LangChain | `5_1_tools.py` |
-| 5. Tool Use | Custom tool-backed agent | CrewAI | `5_2_tools.py` |
-| 5. Tool Use | Deterministic function tool | Google ADK | `5_3_tools.py` |
-| 6. Planning | Plan-then-write crew | CrewAI | `6_1_plan.py` |
-| 6. Planning | Web-research report workflow | OpenAI Responses API | `6_2_plan.py` |
-| 7. Multi-Agent | Research-to-writer handoff | CrewAI | `7_1_multi_agent.py` |
-| 7. Multi-Agent | Hierarchical coordinator delegation | Google ADK | `7_2_multi_agent.py` |
-| 7. Multi-Agent | Writer-checker iteration loop | Google ADK | `7_3_multi_agent.py` |
-| 7. Multi-Agent | Specialist agent as tool | Google ADK | `7_4_multi_agent.py` |
-| 8. Memory | Short-term conversation memory | LangGraph | `8_1_memory.py` |
-| 8. Memory | Long-term self-improving prompts | LangGraph | `8_2_memory.py` |
-| 10. MCP | Filesystem agent with McpToolset tracing | Google ADK | `mcp_agent/agent.py` |
-| 11. Goals & Monitoring | Concept of self improving coding problem solver | LangChain | `11_1_goal_monitoring.py`|
-| 11. Goals & Monitoring | Product grade coding problem solver | CrewAI | `11_2_goal_monitoring.py`|
-| 12. Exception handling and recovery | Product grade location services gracefull tool degradation | Goolge ADK | `12_1_excpetion_recovery.py`|
-| 13. Human in the loop | Supervisor-reviewed refund approval with execution | Google ADK | `13_1_human_in_the_loop.py` |
+| Chapter | Pattern | Framework | File Name | Run Example |
+| --- | --- | --- | --- | --- |
+| 1. Prompt Chaining | Two-step extraction pipeline | LangChain | `1_1_prompt_chaining.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/1_1_prompt_chaining.py` |
+| 2. Routing | LLM router with branch handlers | LangChain | `2_1_routing.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/2_1_routing.py` |
+| 2. Routing | Coordinator with delegated specialists | Google ADK | `2_2_routing.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/2_2_routing.py` |
+| 3. Parallelization | Parallel prompt fan-out with synthesis | LangChain | `3_1_parallelization.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/3_1_parallelization.py` |
+| 3. Parallelization | Parallel specialist fan-out | Google ADK | `3_2_parallelization.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/3_2_parallelization.py` |
+| 3. Parallelization | Workflow fan-out and join | Google ADK | `3_3_parallelization.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/3_3_parallelization.py` |
+| 4. Reflection | Generate-critique refinement loop | LangChain | `4_1_reflection.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/4_1_reflection.py` |
+| 4. Reflection | Generator-reviewer workflow | Google ADK | `4_2_reflection.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/4_2_reflection.py` |
+| 4. Reflection | Structured self-critique loop | LangChain | `4_3_reflection.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/4_3_reflection.py` |
+| 4. Reflection | Graph-based revision loop | LangGraph | `4_4_reflection.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/4_4_reflection.py` |
+| 5. Tool Use | Single-tool agent | LangChain | `5_1_tools.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/5_1_tools.py` |
+| 5. Tool Use | Custom tool-backed agent | CrewAI | `5_2_tools.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/5_2_tools.py` |
+| 5. Tool Use | Deterministic function tool | Google ADK | `5_3_tools.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/5_3_tools.py` |
+| 6. Planning | Plan-then-write crew | CrewAI | `6_1_plan.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/6_1_plan.py` |
+| 6. Planning | Web-research report workflow | OpenAI Responses API | `6_2_plan.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/6_2_plan.py` |
+| 7. Multi-Agent | Research-to-writer handoff | CrewAI | `7_1_multi_agent.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/7_1_multi_agent.py` |
+| 7. Multi-Agent | Hierarchical coordinator delegation | Google ADK | `7_2_multi_agent.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/7_2_multi_agent.py` |
+| 7. Multi-Agent | Writer-checker iteration loop | Google ADK | `7_3_multi_agent.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/7_3_multi_agent.py` |
+| 7. Multi-Agent | Specialist agent as tool | Google ADK | `7_4_multi_agent.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/7_4_multi_agent.py` |
+| 8. Memory | Short-term conversation memory | LangGraph | `8_1_memory.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/8_1_memory.py` |
+| 8. Memory | Long-term self-improving prompts | LangGraph | `8_2_memory.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/8_2_memory.py` |
+| 10. MCP | Filesystem agent with McpToolset tracing | Google ADK | `mcp_agent/agent.py` | `uv run adk web hands_one_code_examples/mcp_agent` |
+| 11. Goals & Monitoring | Concept of self improving coding problem solver | LangChain | `11_1_goal_monitoring.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/11_1_goal_monitoring.py` |
+| 11. Goals & Monitoring | Product grade coding problem solver | CrewAI | `11_2_goal_monitoring.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/11_2_goal_monitoring.py` |
+| 12. Exception handling and recovery | Product grade location services gracefull tool degradation | Goolge ADK | `12_1_excpetion_recovery.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/12_1_exception_recovery.py` |
+| 13. Human in the loop | Supervisor-reviewed refund approval with execution | Google ADK | `13_1_human_in_the_loop.py` | `uv run adk web hands_one_code_examples/human_in_the_loop_agent` |
+| 14. RAG | Google Search grounded research bot with source-aware answers | Google ADK | `14_1_rag.py` | `uv run adk web hands_one_code_examples/rag_google_search_agent` |
 
 ## Requirements
 
@@ -86,53 +87,7 @@ Deep research also reads these optional variables:
 - `OPENAI_DEEP_RESEARCH_MAX_RETRIES` controls retry attempts for transient API failures
 - `OPENAI_DEEP_RESEARCH_RETRY_BASE_DELAY_SECONDS` controls retry backoff timing
 
-## Run examples
-
-Run individual examples as modules from the repository root:
-
-```bash
-uv run python -m hands_one_code_examples.1_1_prompt_chaining
-```
-
-Each example prints its output to the console.
-
-Run these examples via goole sdk web feature in root directory
-```bash
-# Files System MCP Server
-cd hands_one_code_examples && adk web
-```
-```bash
-# in terminal 1: Run Fast MCP Server: Greeter
-uv run python hands_one_code_examples/fastmcp_server.py
-
-# in terminal 2: run adk web ui
-cd hands_one_code_examples && adk web
-```
-
-Interactive HITL example with ADK Web:
-```bash
-uv run adk web hands_one_code_examples/human_in_the_loop_agent
-```
-
-`adk web` is intended for local development and debugging, not production deployment. Once the UI opens, send a request like:
-
-```text
-Refund order ORD-2049 for $149.99 because the customer was double charged 10 days ago. Customer tier is gold.
-```
-
-When the workflow pauses for supervisor input, reply with JSON such as:
-
-```json
-{"decision":"approve","approved_amount":149.99,"notes":"Approved after validating duplicate charge evidence."}
-```
-
-![alt text](image.png)
-
-You can also run a console preview of the same workflow:
-
-```bash
-uv run python -m hands_one_code_examples.13_1_human_in_the_loop
-```
+`adk web` commands in the table start a local UI at `http://127.0.0.1:8000`. Use them for the interactive ADK examples, including the human-in-the-loop and Google Search grounded RAG agents.
 
 ## Deep Research
 
