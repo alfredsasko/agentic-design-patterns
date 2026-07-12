@@ -12,6 +12,10 @@ def install_fake_google_adk_modules() -> None:
     google_module = builtin_types.ModuleType("google")
     adk_module = builtin_types.ModuleType("google.adk")
     agents_module = builtin_types.ModuleType("google.adk.agents")
+    apps_module = builtin_types.ModuleType("google.adk.apps")
+    apps_app_module = builtin_types.ModuleType("google.adk.apps.app")
+    models_module = builtin_types.ModuleType("google.adk.models")
+    llm_response_module = builtin_types.ModuleType("google.adk.models.llm_response")
     runners_module = builtin_types.ModuleType("google.adk.runners")
     tools_module = builtin_types.ModuleType("google.adk.tools")
     genai_module = builtin_types.ModuleType("google.genai")
@@ -129,6 +133,20 @@ def install_fake_google_adk_modules() -> None:
     class FakeLoopAgent(FakeBaseAgent):
         pass
 
+    class FakeSequentialAgent(FakeBaseAgent):
+        pass
+
+    class FakeApp:
+        def __init__(self, *, name, root_agent, **kwargs):
+            self.name = name
+            self.root_agent = root_agent
+            self.__dict__.update(kwargs)
+
+    class FakeLlmResponse:
+        def __init__(self, *, content=None, **kwargs):
+            self.content = content
+            self.__dict__.update(kwargs)
+
     class FakeWorkflow(FakeBaseAgent):
         def __init__(self, **kwargs):
             self.edges = kwargs.pop("edges", [])
@@ -146,6 +164,10 @@ def install_fake_google_adk_modules() -> None:
             self.require_confirmation = require_confirmation
             self.name = getattr(func, "__name__", func.__class__.__name__)
             self.description = getattr(func, "__doc__", "") or ""
+
+    class FakeGoogleSearchTool:
+        name = "google_search"
+        description = "Searches Google for up-to-date public web information."
 
     class FakeNodeDecorator:
         def __init__(self, name=None):
@@ -227,6 +249,11 @@ def install_fake_google_adk_modules() -> None:
     agents_module.Agent = FakeLlmAgent
     agents_module.LlmAgent = FakeLlmAgent
     agents_module.LoopAgent = FakeLoopAgent
+    agents_module.SequentialAgent = FakeSequentialAgent
+    apps_module.App = FakeApp
+    apps_app_module.App = FakeApp
+    models_module.LlmResponse = FakeLlmResponse
+    llm_response_module.LlmResponse = FakeLlmResponse
     invocation_context_module.InvocationContext = FakeInvocationContext
     events_module.Event = FakeEvent
     events_module.EventActions = FakeEventActions
@@ -234,6 +261,7 @@ def install_fake_google_adk_modules() -> None:
     runners_module.InMemoryRunner = FakeInMemoryRunner
     tools_module.AgentTool = FakeAgentTool
     tools_module.FunctionTool = FakeFunctionTool
+    tools_module.google_search = FakeGoogleSearchTool()
     genai_module.types = builtin_types.SimpleNamespace(
         Content=FakeContent,
         Part=FakePart,
@@ -244,6 +272,8 @@ def install_fake_google_adk_modules() -> None:
     google_module.adk = adk_module
     google_module.genai = genai_module
     adk_module.agents = agents_module
+    adk_module.apps = apps_module
+    adk_module.models = models_module
     adk_module.runners = runners_module
     adk_module.tools = tools_module
     adk_module.events = events_module
@@ -255,6 +285,10 @@ def install_fake_google_adk_modules() -> None:
     sys.modules["google"] = google_module
     sys.modules["google.adk"] = adk_module
     sys.modules["google.adk.agents"] = agents_module
+    sys.modules["google.adk.apps"] = apps_module
+    sys.modules["google.adk.apps.app"] = apps_app_module
+    sys.modules["google.adk.models"] = models_module
+    sys.modules["google.adk.models.llm_response"] = llm_response_module
     sys.modules["google.adk.agents.invocation_context"] = invocation_context_module
     sys.modules["google.adk.runners"] = runners_module
     sys.modules["google.adk.tools"] = tools_module
