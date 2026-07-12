@@ -43,6 +43,7 @@ The repository is organized as a set of small, runnable examples that demonstrat
 | 12. Exception handling and recovery | Product grade location services gracefull tool degradation | Goolge ADK | `12_1_excpetion_recovery.py` | `uv run python hands_one_code_examples/run_example.py hands_one_code_examples/12_1_exception_recovery.py` |
 | 13. Human in the loop | Supervisor-reviewed refund approval with execution | Google ADK | `13_1_human_in_the_loop.py` | `uv run adk web hands_one_code_examples/human_in_the_loop_agent` |
 | 14. RAG | Google Search grounded research bot with source-aware answers | Google ADK | `14_1_rag.py` | `uv run adk web hands_one_code_examples/rag_google_search_agent` |
+| 14. RAG | RAG retrieval using Weaviate vector store | LangChain | `14_2_rag.py`| `uv run python -m hands_one_code_examples.14_2_rag`|
 
 ## Requirements
 
