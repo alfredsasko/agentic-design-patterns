@@ -47,10 +47,38 @@ def install_fake_google_adk_modules() -> None:
             super().__init__(role="user", parts=parts)
 
     class FakeEventActions:
-        def __init__(self, *, escalate=None, route=None, transfer_to_agent=None):
+        def __init__(
+            self,
+            *,
+            escalate=None,
+            route=None,
+            transfer_to_agent=None,
+            state_delta=None,
+        ):
             self.escalate = escalate
             self.route = route
             self.transfer_to_agent = transfer_to_agent
+            self.state_delta = dict(state_delta or {})
+
+    class FakeRequestInput:
+        def __init__(
+            self,
+            *,
+            interrupt_id=None,
+            interruptId=None,
+            payload=None,
+            message=None,
+            response_schema=None,
+            responseSchema=None,
+        ):
+            self.interrupt_id = interrupt_id or interruptId or "request-input"
+            self.interruptId = self.interrupt_id
+            self.payload = payload
+            self.message = message
+            self.response_schema = (
+                response_schema if response_schema is not None else responseSchema
+            )
+            self.responseSchema = self.response_schema
 
     class FakeEvent:
         def __init__(
@@ -59,6 +87,7 @@ def install_fake_google_adk_modules() -> None:
             author="",
             content=None,
             output=None,
+            state=None,
             is_final=False,
             actions=None,
             node_path="",
@@ -67,7 +96,7 @@ def install_fake_google_adk_modules() -> None:
             self.content = content
             self.output = output
             self._is_final = is_final
-            self.actions = actions or FakeEventActions()
+            self.actions = actions or FakeEventActions(state_delta=state)
             self.node_info = builtin_types.SimpleNamespace(path=node_path)
 
         def is_final_response(self):
@@ -110,6 +139,13 @@ def install_fake_google_adk_modules() -> None:
             self.agent = agent
             self.name = agent.name
             self.description = getattr(agent, "description", "")
+
+    class FakeFunctionTool:
+        def __init__(self, func, *, require_confirmation=False):
+            self.func = func
+            self.require_confirmation = require_confirmation
+            self.name = getattr(func, "__name__", func.__class__.__name__)
+            self.description = getattr(func, "__doc__", "") or ""
 
     class FakeNodeDecorator:
         def __init__(self, name=None):
@@ -188,14 +224,16 @@ def install_fake_google_adk_modules() -> None:
             self.close_calls += 1
 
     agents_module.BaseAgent = FakeBaseAgent
+    agents_module.Agent = FakeLlmAgent
     agents_module.LlmAgent = FakeLlmAgent
     agents_module.LoopAgent = FakeLoopAgent
     invocation_context_module.InvocationContext = FakeInvocationContext
     events_module.Event = FakeEvent
     events_module.EventActions = FakeEventActions
+    events_module.RequestInput = FakeRequestInput
     runners_module.InMemoryRunner = FakeInMemoryRunner
     tools_module.AgentTool = FakeAgentTool
-    tools_module.FunctionTool = builtin_types.SimpleNamespace
+    tools_module.FunctionTool = FakeFunctionTool
     genai_module.types = builtin_types.SimpleNamespace(
         Content=FakeContent,
         Part=FakePart,
